@@ -63,4 +63,31 @@ export const CODING_LANGUAGES = [
 ];
 
 export const GEMINI_MODEL = 'gemini-3-flash-preview';
-export const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyATS0DDpWbPXRfnKY-zB5K7Gr12Ka5h1Co";
+
+// Safely access environment variables with fallback
+const getGeminiApiKey = (): string => {
+  const fallbackKey = "AIzaSyATS0DDpWbPXRfnKY-zB5K7Gr12Ka5h1Co";
+  
+  try {
+    // Check process.env (Next.js style or Vite define)
+    if (typeof process !== 'undefined' && process.env) {
+      if (process.env.NEXT_PUBLIC_GEMINI_API_KEY) return process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (process.env.VITE_GEMINI_API_KEY) return process.env.VITE_GEMINI_API_KEY;
+    }
+
+    // Check import.meta.env (Vite style)
+    // @ts-ignore - import.meta.env is Vite specific
+    if (import.meta.env) {
+      // @ts-ignore
+      if (import.meta.env.VITE_GEMINI_API_KEY) return import.meta.env.VITE_GEMINI_API_KEY;
+      // @ts-ignore
+      if (import.meta.env.NEXT_PUBLIC_GEMINI_API_KEY) return import.meta.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    }
+  } catch (e) {
+    console.warn("Error accessing environment variables for Gemini API key:", e);
+  }
+
+  return fallbackKey;
+};
+
+export const GEMINI_API_KEY = getGeminiApiKey();
