@@ -67,7 +67,7 @@ export const GEMINI_PRO_MODEL = 'gemini-3.1-pro-preview';
 
 // Safely access environment variables with fallback
 const getGeminiApiKey = (): string => {
-  const fallbackKey = "AIzaSyATS0DDpWbPXRfnKY-zB5K7Gr12Ka5h1Co";
+  const fallbackKey = "";
   let apiKey: string | undefined;
   
   try {
