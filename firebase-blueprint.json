@@ -1,0 +1,28 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and statistics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "name": { "type": "string", "description": "Display name" },
+        "email": { "type": "string", "description": "Email address" },
+        "avatar": { "type": "string", "description": "Avatar URL" },
+        "role": { "type": "string", "enum": ["student", "teacher"], "description": "User role" },
+        "level": { "type": "string", "description": "User education level" },
+        "totalMinutes": { "type": "number", "description": "Total study minutes" },
+        "flashcardsFlipped": { "type": "number", "description": "Total flashcards flipped" },
+        "quizCorrect": { "type": "number", "description": "Total correct quiz answers" },
+        "quizTotal": { "type": "number", "description": "Total quiz questions attempted" }
+      },
+      "required": ["uid", "name", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User documents"
+    }
+  }
+}
