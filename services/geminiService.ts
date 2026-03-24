@@ -1,8 +1,8 @@
 import { GoogleGenAI, GenerateContentResponse, Type, Part, Content, FunctionDeclaration, Modality } from "@google/genai";
 import { ChatMessage, QuizQuestion, Flashcard, CodeExplanation, NoraSession } from '../types';
-import { GEMINI_MODEL } from '../constants';
+import { GEMINI_MODEL, GEMINI_API_KEY } from '../constants';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const buildChatHistory = (history: ChatMessage[]): Content[] => {
     if (!history || history.length === 0) return [];

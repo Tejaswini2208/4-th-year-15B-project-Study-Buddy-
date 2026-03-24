@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 import { ChatMessage } from '../types';
+import { GEMINI_API_KEY } from '../constants';
 
 // FIX: Add global declaration for webkitAudioContext to fix TypeScript errors and ensure cross-browser compatibility.
 declare global {
@@ -11,8 +12,8 @@ declare global {
   }
 }
 
-// FIX: Initialize the GoogleGenAI client with the API key from environment variables as per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// FIX: Initialize the GoogleGenAI client with the API key from constants.
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 // FIX: Define LiveSession type helper since it's not exported directly in the current SDK version.
 type LiveSession = Awaited<ReturnType<InstanceType<typeof GoogleGenAI>['live']['connect']>>;

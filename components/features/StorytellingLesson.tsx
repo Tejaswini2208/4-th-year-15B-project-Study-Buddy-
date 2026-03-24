@@ -5,7 +5,7 @@ import Button from '../ui/Button';
 import Card from '../ui/Card';
 import Loader from '../ui/Loader';
 import { SparklesIcon } from '../icons/SparklesIcon';
-import { GEMINI_MODEL, AI_VOICES } from '../../constants';
+import { GEMINI_MODEL, AI_VOICES, GEMINI_API_KEY } from '../../constants';
 import { generateTutorVoice } from '../../services/geminiService';
 import { decodeBase64, decodeAudioData } from '../../utils/audioUtils';
 
@@ -108,7 +108,7 @@ const StorytellingLesson: React.FC = () => {
     setStory('');
     
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
       const prompt = `
         You are a master storyteller and educator. 
         Explain the topic: "${topic}" as a narrative story.
