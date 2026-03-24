@@ -63,31 +63,35 @@ export const CODING_LANGUAGES = [
 ];
 
 export const GEMINI_MODEL = 'gemini-3-flash-preview';
+export const GEMINI_PRO_MODEL = 'gemini-3.1-pro-preview';
 
 // Safely access environment variables with fallback
 const getGeminiApiKey = (): string => {
   const fallbackKey = "AIzaSyATS0DDpWbPXRfnKY-zB5K7Gr12Ka5h1Co";
+  let apiKey: string | undefined;
   
   try {
-    // Check process.env (Next.js style or Vite define)
-    if (typeof process !== 'undefined' && process.env) {
-      if (process.env.NEXT_PUBLIC_GEMINI_API_KEY) return process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (process.env.VITE_GEMINI_API_KEY) return process.env.VITE_GEMINI_API_KEY;
+    // 1. Check import.meta.env (Vite style)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) {
+      // @ts-ignore
+      apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     }
 
-    // Check import.meta.env (Vite style)
-    // @ts-ignore - import.meta.env is Vite specific
-    if (import.meta.env) {
-      // @ts-ignore
-      if (import.meta.env.VITE_GEMINI_API_KEY) return import.meta.env.VITE_GEMINI_API_KEY;
-      // @ts-ignore
-      if (import.meta.env.NEXT_PUBLIC_GEMINI_API_KEY) return import.meta.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    // 2. Check process.env (Vite define or Node style)
+    if (!apiKey && typeof process !== 'undefined' && process.env && process.env.VITE_GEMINI_API_KEY) {
+      apiKey = process.env.VITE_GEMINI_API_KEY;
     }
   } catch (e) {
     console.warn("Error accessing environment variables for Gemini API key:", e);
   }
 
-  return fallbackKey;
+  if (!apiKey) {
+    console.error("Gemini API Key is missing from environment variables. Using fallback key. Please check your .env file.");
+    return fallbackKey;
+  }
+
+  return apiKey;
 };
 
 export const GEMINI_API_KEY = getGeminiApiKey();

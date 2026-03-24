@@ -110,7 +110,8 @@ const DUMMY_USER: User = {
   email: 'guest@example.com',
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
   role: 'student',
-  level: 'Beginner'
+  level: 'Beginner',
+  isGuest: true
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -239,11 +240,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!user) return;
 
     const interval = setInterval(async () => {
+      if (user.isGuest) {
+        setStats(prev => ({ ...prev, totalMinutes: prev.totalMinutes + 1 }));
+        return;
+      }
+
       const userRef = doc(db, 'users', user.uid);
       try {
-        await updateDoc(userRef, {
+        await setDoc(userRef, {
           totalMinutes: increment(1)
-        });
+        }, { merge: true });
       } catch (error: any) {
         console.error("Error updating minutes", error);
         // If the document is too large, we need to fix it
@@ -321,6 +327,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfile = async (name: string, avatar?: string) => {
     if (!user) return;
+    if (user.isGuest) {
+      setUser(prev => prev ? { ...prev, name, avatar: avatar || prev.avatar } : null);
+      return;
+    }
     const userRef = doc(db, 'users', user.uid);
     try {
       await updateDoc(userRef, { name, avatar: avatar || user.avatar });
@@ -331,6 +341,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const setOnboardingData = async (role: 'student' | 'teacher', level: string) => {
     if (!user) return;
+    if (user.isGuest) {
+      setUser(prev => prev ? { ...prev, role, level } : null);
+      return;
+    }
     const userRef = doc(db, 'users', user.uid);
     try {
       await updateDoc(userRef, { role, level });
@@ -341,6 +355,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const trackFlashcardFlip = async () => {
     if (!user) return;
+    if (user.isGuest) {
+      setStats(prev => ({ ...prev, flashcardsFlipped: prev.flashcardsFlipped + 1 }));
+      return;
+    }
     const userRef = doc(db, 'users', user.uid);
     try {
       await updateDoc(userRef, { flashcardsFlipped: increment(1) });
@@ -351,6 +369,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const trackQuizResult = async (isCorrect: boolean) => {
     if (!user) return;
+    if (user.isGuest) {
+      setStats(prev => ({
+        ...prev,
+        quizCorrect: prev.quizCorrect + (isCorrect ? 1 : 0),
+        quizTotal: prev.quizTotal + 1
+      }));
+      return;
+    }
     const userRef = doc(db, 'users', user.uid);
     try {
       await updateDoc(userRef, {

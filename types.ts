@@ -5,6 +5,7 @@ export interface User {
   avatar?: string;
   role?: 'student' | 'teacher';
   level?: string;
+  isGuest?: boolean;
 }
 
 export interface ChatMessage {

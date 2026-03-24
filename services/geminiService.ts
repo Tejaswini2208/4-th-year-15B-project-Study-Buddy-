@@ -1,6 +1,6 @@
 import { GoogleGenAI, GenerateContentResponse, Type, Part, Content, FunctionDeclaration, Modality } from "@google/genai";
 import { ChatMessage, QuizQuestion, Flashcard, CodeExplanation, NoraSession } from '../types';
-import { GEMINI_MODEL, GEMINI_API_KEY } from '../constants';
+import { GEMINI_MODEL, GEMINI_PRO_MODEL, GEMINI_API_KEY } from '../constants';
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
@@ -33,7 +33,7 @@ export const generateTutorResponseStream = async (prompt: string, language: stri
   const contents = [...buildChatHistory(history), { role: 'user', parts: userParts }];
   
   const responseStream = await ai.models.generateContentStream({
-      model: 'gemini-3-flash-preview',
+      model: GEMINI_MODEL,
       contents,
       config: { 
           systemInstruction: `You are a friendly personal tutor. Respond in ${language}. No markdown. You have access to the live web for scraping information if needed.`,
@@ -72,9 +72,9 @@ export const generateCodingMentorChatStream = async (prompt: string, currentCode
     const contents = [...buildChatHistory(history), { role: 'user', parts: [{ text: prompt }] }];
     
     const responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3-pro-preview',
+        model: GEMINI_PRO_MODEL,
         contents,
-        config: { systemInstruction }
+        config: { systemInstruction, maxOutputTokens: 2048 }
     });
 
     async function* streamGenerator() {
@@ -89,9 +89,9 @@ export const generateNoraTextStream = async (session: NoraSession, prompt: strin
     const userParts: Part[] = [{ text: prompt }];
     if (image) userParts.push({ inlineData: { mimeType: image.mimeType, data: image.data } });
     const responseStream = await ai.models.generateContentStream({
-        model: 'gemini-3-flash-preview',
+        model: GEMINI_MODEL,
         contents: [...buildChatHistory(session.history), { role: 'user', parts: userParts }],
-        config: { systemInstruction: `You are NORA. Use these notes: ${session.notes}` }
+        config: { systemInstruction: `You are NORA. Use these notes: ${session.notes}`, maxOutputTokens: 2048 }
     });
     async function* streamGenerator() { for await (const chunk of responseStream) yield chunk.text; }
     return streamGenerator();
@@ -101,9 +101,9 @@ export const generateNoraJson = async (session: NoraSession, prompt: string, sch
     const userParts: Part[] = [{ text: prompt }];
     if (image) userParts.push({ inlineData: { mimeType: image.mimeType, data: image.data } });
     const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: GEMINI_MODEL,
         contents: [...buildChatHistory(session.history), { role: 'user', parts: userParts }],
-        config: { systemInstruction: `You are NORA. Use these notes: ${session.notes}`, responseMimeType: 'application/json', responseSchema: schema }
+        config: { systemInstruction: `You are NORA. Use these notes: ${session.notes}`, responseMimeType: 'application/json', responseSchema: schema, maxOutputTokens: 2048 }
     });
     return JSON.parse(response.text);
 };
@@ -121,15 +121,23 @@ export const generateImage = async(prompt: string): Promise<string> => {
 };
 
 export const generateNotesFromTranscription = async (transcription: string): Promise<string> => {
-    const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: `Summarize this as notes:\n${transcription}` });
+    const response = await ai.models.generateContent({ 
+        model: GEMINI_MODEL, 
+        contents: `Summarize this as notes:\n${transcription}`,
+        config: { maxOutputTokens: 2048 }
+    });
     return response.text;
 };
 
 export const explainCode = async (code: string, language: string): Promise<CodeExplanation[]> => {
     const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: GEMINI_PRO_MODEL,
         contents: `Explain ${language} code. IMPORTANT: Do not use the following characters in your explanations: ! @ # $ % ^ & * ( ). Explanations should be clean and professional. Code:\n${code}`,
-        config: { responseMimeType: 'application/json', responseSchema: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { lineNumber: { type: Type.INTEGER }, code: { type: Type.STRING }, explanation: { type: Type.STRING } }, required: ['lineNumber', 'code', 'explanation'] } } }
+        config: { 
+            responseMimeType: 'application/json', 
+            responseSchema: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { lineNumber: { type: Type.INTEGER }, code: { type: Type.STRING }, explanation: { type: Type.STRING } }, required: ['lineNumber', 'code', 'explanation'] } },
+            maxOutputTokens: 2048
+        }
     });
     return JSON.parse(response.text);
 };
@@ -223,11 +231,12 @@ const navigateTool: FunctionDeclaration = {
 
 export const runRamAgent = async (transcript: string) => {
     return await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: GEMINI_MODEL,
         contents: transcript,
         config: {
             systemInstruction: RAM_SYSTEM_INSTRUCTION,
             tools: [{ functionDeclarations: [playYoutubeTool, openAppTool, webSearchTool, navigateTool] }],
+            maxOutputTokens: 1024
         }
     });
 };
