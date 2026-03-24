@@ -225,7 +225,7 @@ export const useVoiceConversation = ({ systemInstruction, onUpdateHistory, voice
 
                         if (sessionPromiseRef.current) {
                            sessionPromiseRef.current.then((session) => {
-                             session.sendRealtimeInput({ media: pcmBlob });
+                             session.sendRealtimeInput({ audio: pcmBlob });
                            });
                         }
                     };

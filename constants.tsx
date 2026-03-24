@@ -63,4 +63,4 @@ export const CODING_LANGUAGES = [
 ];
 
 export const GEMINI_MODEL = 'gemini-3-flash-preview';
-export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyATS0DDpWbPXRfnKY-zB5K7Gr12Ka5h1Co";
+export const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyATS0DDpWbPXRfnKY-zB5K7Gr12Ka5h1Co";
